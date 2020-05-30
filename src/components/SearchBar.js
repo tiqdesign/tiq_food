@@ -1,6 +1,7 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, TouchableOpacity } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { TextInput } from "react-native-gesture-handler";
 
 function SearchBar({ term, onTermChange, onTermSubmit }) {
@@ -16,6 +17,16 @@ function SearchBar({ term, onTermChange, onTermSubmit }) {
         placeholder="Search"
         onEndEditing={onTermSubmit}
       />
+      {term ? (
+        <TouchableOpacity
+          onPress={() => {
+            onTermChange("");
+          }}
+          style={styles.clearButton}
+        >
+          <AntDesign name="close" size={20} color="black" />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
@@ -43,6 +54,10 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
+  },
+  clearButton: {
+    marginRight: 10,
+    alignSelf: "center",
   },
 });
 export default SearchBar;

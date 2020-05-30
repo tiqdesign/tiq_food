@@ -1,27 +1,20 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Text, View, ScrollView } from "react-native";
 import SearchBar from "../components/SearchBar";
 import yelp from "../api/yelp";
+import useResults from "../hooks/useResults";
+import ResultsList from "../components/ResultsList";
 
-function SearchScreen() {
-  const [term, setTerm] = useState("");
-  const [results, setResults] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
+function SearchScreen({ navigation }) {
+  const [term, setTerm] = useState(""); //term for search
+  //we created a custom hook called useResults() and we destruct these keys for using in jsx
+  const [searchApi, results, errorMessage] = useResults();
 
-  const searchApi = async (searchTerm) => {
-    try {
-      const response = await yelp.get("/search", {
-        params: {
-          limit: 50, //'https://api.yelp.com/v3/businesses/search?limit=50'
-          term: searchTerm,
-          location: "san jose",
-        },
-      });
-      setResults(response.data.businesses);
-    } catch (e) {
-      setErrorMessage("Something went wrong");
-    }
-  };
+  function filterResultByPrice(price) {
+    return results.filter((result) => {
+      return result.price === price;
+    });
+  }
 
   return (
     <View style={styles.container}>
@@ -29,14 +22,33 @@ function SearchScreen() {
         term={term}
         onTermChange={(newTerm) => {
           setTerm(newTerm);
-          setErrorMessage("");
         }}
         onTermSubmit={() => {
           searchApi(term);
         }}
       />
-      <Text>We have found {results.length} results</Text>
-      <Text style={styles.errorMessage}>{errorMessage}</Text>
+      {errorMessage ? (
+        <Text style={styles.errorMessage}>{errorMessage}</Text>
+      ) : null}
+      <ScrollView>
+        <ResultsList
+          results={filterResultByPrice("$")}
+          title="Cost Effective"
+          navigation={navigation}
+        />
+        <ResultsList
+          results={filterResultByPrice("$$")}
+          title="Bit Pricier"
+          navigation={navigation}
+        />
+        {filterResultByPrice("$$$").length === 0 ? null : (
+          <ResultsList
+            results={filterResultByPrice("$$$")}
+            title="Bit Spender"
+            navigation={navigation}
+          />
+        )}
+      </ScrollView>
     </View>
   );
 }
